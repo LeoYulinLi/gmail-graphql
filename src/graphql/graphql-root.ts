@@ -2,6 +2,7 @@ import { graphqlHTTP } from "express-graphql";
 import { buildSchema } from "graphql";
 import { google } from "googleapis";
 import keys from "../config/keys";
+import { createEmail } from "../google/utils";
 
 export default function graphqlRoot() {
 
@@ -61,8 +62,24 @@ export default function graphqlRoot() {
       domain: async (name: string) => {
         return [];
       },
-      sendMessage: async ({ emails, message }: { emails: string[], message: string }) => {
-
+      sendMessage: async (arg: { messageInput: { emails: string[], message: string } }) => {
+        try {
+          const auth = new google.auth.OAuth2(keys.googleClientId, keys.googleClientSecret, keys.googleAppCallback);
+          auth.setCredentials(JSON.parse(keys.tempToken));
+          const gmail = google.gmail({version: 'v1', auth});
+          for (const email of arg.messageInput.emails) {
+            await gmail.users.messages.send({
+              userId: "me",
+              requestBody: {
+                raw: createEmail(email, "me", "title", arg.messageInput.message)
+              }
+            });
+          }
+          return "done"
+        } catch (e) {
+          console.log(e);
+          throw e;
+        }
       }
     },
     context: () => "hi",

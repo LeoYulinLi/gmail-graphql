@@ -4,7 +4,8 @@ let keys: {
   secretOrKey: string,
   googleClientId: string,
   googleClientSecret: string,
-  googleAppCallback: string
+  googleAppCallback: string,
+  tempToken: string
 };
 
 if (process.env.NODE_ENV === 'production') {
