@@ -1,8 +1,6 @@
 import { graphqlHTTP } from "express-graphql";
 import { buildSchema } from "graphql";
-import { google } from "googleapis";
-import keys from "../config/keys";
-import { createEmail } from "../google/utils";
+import { allUsers, createEmail, gmailService, peopleService, sendGmail } from "../google/utils";
 
 export default function graphqlRoot() {
 
@@ -16,7 +14,7 @@ export default function graphqlRoot() {
 
           type RootQuery {
               users: [User!]!
-              domain(name: String!): [User!]!
+              search(name: String!): [User!]!
           }
 
           input MessageInput {
@@ -35,51 +33,23 @@ export default function graphqlRoot() {
       `),
       rootValue: {
         users: async () => {
-          const auth = new google.auth.OAuth2(keys.googleClientId, keys.googleClientSecret, keys.googleAppCallback);
-
-          try {
-            const service = google.people({ version: "v1", auth })
-            const { data: { connections } } = await service.people.connections.list({
-              resourceName: "people/me",
-              personFields: "names,emailAddresses"
-            });
-            if (connections) {
-              return connections
-                .filter(person => person.emailAddresses && person.names)
-                .map(person => {
-                  return {
-                    email: person.emailAddresses?.[0].value
-                  }
-                });
-            } else {
-              return [];
-            }
-          } catch (e) {
-            console.log(e);
-            throw e;
-          }
+          return allUsers(peopleService());
         },
-        domain: async (name: string) => {
-          return [];
+        search: async (arg: { name: string }) => {
+          return allUsers(peopleService(), person => {
+            if (person.emailAddresses) {
+              return person.emailAddresses.some(e => e.value?.includes(arg.name));;
+            } else {
+              return false;
+            }
+          });
         },
         sendMessage: async (arg: { messageInput: { emails: string[], message: string } }) => {
-          try {
-            const auth = new google.auth.OAuth2(keys.googleClientId, keys.googleClientSecret, keys.googleAppCallback);
-            auth.setCredentials(JSON.parse(keys.tempToken));
-            const gmail = google.gmail({version: 'v1', auth});
-            for (const email of arg.messageInput.emails) {
-              await gmail.users.messages.send({
-                userId: "me",
-                requestBody: {
-                  raw: createEmail(email, "me", "title", arg.messageInput.message)
-                }
-              });
-            }
-            return "done"
-          } catch (e) {
-            console.log(e);
-            throw e;
+          const gmail = gmailService();
+          for (const email of arg.messageInput.emails) {
+            await sendGmail(gmail, email, arg.messageInput.message);
           }
+          return "done";
         }
       },
       context: () => {
