@@ -38,7 +38,7 @@ export default function graphqlRoot() {
         search: async (arg: { name: string }) => {
           return allUsers(peopleService(), person => {
             if (person.emailAddresses) {
-              return person.emailAddresses.some(e => e.value?.includes(arg.name));;
+              return person.emailAddresses.some(e => e.value?.includes(arg.name));
             } else {
               return false;
             }
