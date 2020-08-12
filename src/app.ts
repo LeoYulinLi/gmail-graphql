@@ -21,6 +21,15 @@ mongoose
   .then(() => console.log("Connected to MongoDB successfully"))
   .catch(err => console.log(err));
 
+app.get("/auth/google", passport.authenticate("google", {
+  scope: [
+    'https://www.googleapis.com/auth/contacts.readonly',
+    'https://www.googleapis.com/auth/gmail.send',
+  ]
+}));
+
+app.get("/auth/google/callback", passport.authenticate("google"));
+
 app.use("/api", graphqlRoot());
 
 const port = process.env.PORT || 5000;

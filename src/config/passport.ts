@@ -22,4 +22,13 @@ export default function configPassport(passport: passport.PassportStatic) {
       }
     })
   );
+
+  passport.serializeUser((user: any, done) => {
+    done(null, user.id);
+  })
+
+  passport.deserializeUser(async (id: string, done) => {
+    done(null, await User.findById(id));
+  })
+
 }
