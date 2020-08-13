@@ -43,7 +43,14 @@ graphql end point
 #### Types
 ```
 type User {
-   email: String
+    email: String
+}
+```
+```
+input MessageInput {
+    emails: [String!]!
+    title: String!
+    body: String!
 }
 ```
 
@@ -86,7 +93,7 @@ response
 ##### Send message
 ```graphql
 mutation {
-  sendMessage(messageInput: { emails: ["a@b.co", "d@e.co"], message: "test" })
+  sendMessage(messageInput: { emails: ["a@b.co", "d@e.co"], title: "custom title", body: "custom body" })
 }
 ```
 response

@@ -2,6 +2,12 @@ import { graphqlHTTP } from "express-graphql";
 import { buildSchema } from "graphql";
 import { allUsers, createEmail, gmailService, peopleService, sendGmail } from "../google/utils";
 
+export interface MessageInput {
+  emails: string[]
+  title: string
+  body: string
+}
+
 export default function graphqlRoot() {
 
   return graphqlHTTP(request => {
@@ -19,7 +25,8 @@ export default function graphqlRoot() {
 
           input MessageInput {
               emails: [String!]!
-              message: String!
+              title: String!
+              body: String!
           }
 
           type RootMutation {
@@ -44,10 +51,10 @@ export default function graphqlRoot() {
             }
           });
         },
-        sendMessage: async (arg: { messageInput: { emails: string[], message: string } }) => {
+        sendMessage: async (arg: { messageInput: MessageInput }) => {
           const gmail = gmailService();
-          for (const email of arg.messageInput.emails) {
-            await sendGmail(gmail, email, arg.messageInput.message);
+          for (const emailAddress of arg.messageInput.emails) {
+            await sendGmail(gmail, emailAddress, arg.messageInput);
           }
           return "done";
         }

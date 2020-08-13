@@ -8,7 +8,7 @@ export default function configPassport(passport: passport.PassportStatic) {
     new OAuth2Strategy({
       clientID: keys.googleClientId,
       clientSecret: keys.googleClientSecret,
-      callbackURL: "/auth/google/callback"
+      callbackURL: keys.googleAppCallback
     }, async (accessToken, refreshToken, profile, done) => {
       const user = await User.findOne({ googleId: profile.id });
       if (user) {

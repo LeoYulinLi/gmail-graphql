@@ -4,6 +4,7 @@ import keys from "../config/keys";
 import People = people_v1.People;
 import Gmail = gmail_v1.Gmail;
 import Schema$Person = people_v1.Schema$Person;
+import { MessageInput } from "../graphql/graphql-root";
 
 /**
  * Build an email as an RFC 5322 formatted, Base64 encoded string
@@ -62,11 +63,11 @@ export function gmailService(): Gmail {
   }
 }
 
-export async function sendGmail(gmail: Gmail, email: string, message: string) {
+export async function sendGmail(gmail: Gmail, emailAddress: string, messageInput: MessageInput) {
   return await gmail.users.messages.send({
     userId: "me",
     requestBody: {
-      raw: createEmail(email, "me", "title", message)
+      raw: createEmail(emailAddress, "me", messageInput.title, messageInput.body)
     }
   });
 }

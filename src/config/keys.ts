@@ -4,6 +4,7 @@ let keys: {
   secretOrKey: string,
   googleClientId: string,
   googleClientSecret: string,
+  googleAppCallback: string,
   tempToken: string
 };
 
